@@ -3,7 +3,8 @@ PYTHON=python3
 
 PYTHON_ENV_ROOT=envs
 PYTHON_DEV_ENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-dev
-PYTHON_PACKAGING_ENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-packaging-env
+PYTHON_PACKAGING_ENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-packaging
+PYTHON_TESTING_ENV=$(PYTHON_ENV_ROOT)/$(PYTHON)-testing
 
 .PHONY: clean doc sdist shell freeze
 
@@ -34,9 +35,21 @@ $(PYTHON_PACKAGING_ENV)/.created: REQUIREMENTS.packaging.txt
 
 packaging-env: $(PYTHON_PACKAGING_ENV)/.created
 
+# test environment ############################################################
+$(PYTHON_TESTING_ENV)/.created: REQUIREMENTS.testing.txt
+	rm -rf $(PYTHON_TESTING_ENV) && \
+	$(PYTHON) -m venv $(PYTHON_TESTING_ENV) && \
+	. $(PYTHON_TESTING_ENV)/bin/activate && \
+	pip install --upgrade pip && \
+	pip install -r REQUIREMENTS.testing.txt
+	date > $(PYTHON_TESTING_ENV)/.created
+
+testing-env: $(PYTHON_TESTING_ENV)/.created
+
 # environment helper ##########################################################
 clean:
 	rm -rf $(PYTHON_ENV_ROOT)
+	rm -rf .tox
 
 shell: dev-env
 	. $(PYTHON_DEV_ENV)/bin/activate && \
@@ -55,3 +68,20 @@ sdist: packaging-env
 _release: sdist
 	. $(PYTHON_PACKAGING_ENV)/bin/activate && \
 	twine upload --config-file ~/.pypirc.fscherf dist/*
+
+# tests #######################################################################
+test: testing-env
+	. $(PYTHON_TESTING_ENV)/bin/activate && \
+	time tox $(args)
+
+ci-test: testing-env
+	. $(PYTHON_TESTING_ENV)/bin/activate && \
+	time JENKINS_URL=1 tox $(args)
+
+lint: testing-env
+	. $(PYTHON_TESTING_ENV)/bin/activate && \
+	time tox -e lint $(args)
+
+html-cov-server:
+	cd htmlcov && \
+	python3 -m http.server
