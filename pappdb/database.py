@@ -33,10 +33,7 @@ class Database:
     # tables ##################################################################
     def create_table(self, name):
         with self.lock:
-            table = Table(
-                database=self,
-                name=name,
-            )
+            table = Table(database=self)
 
             self._tables[name] = table
 

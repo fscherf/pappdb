@@ -6,19 +6,8 @@ DEFAULT_PAGE_LENGTH = 30
 
 
 class Table:
-    def __init__(
-            self,
-            database,
-            name,
-            parent=None,
-            rows=None,
-            is_view=False,
-    ):
-
+    def __init__(self, database, rows=None):
         self._database = database
-        self._name = name
-        self._parent = parent
-        self._is_view = is_view
 
         self._columns = {}
 
@@ -43,8 +32,6 @@ class Table:
             if isinstance(key, slice):
                 return Table(
                     database=self._database,
-                    name=self._name,
-                    parent=self,
                     rows=self._rows[key],
                 )
 
@@ -52,7 +39,7 @@ class Table:
 
     def __repr__(self):
         if not self._rows:
-            return f'<Table(name={self._name}, rows=[])>'
+            return '<Table(rows=[])>'
 
         with self._database.lock:
             # pagination
@@ -110,16 +97,10 @@ class Table:
 
     def get_column_names(self):
         with self._database.lock:
-            if self._is_view and self._parent:
-                return self._parent.get_column_names()
-
             return sorted(list(self._columns.keys()))
 
     # rows ####################################################################
     def add_row(self, row=None, **row_data):
-        if self._is_view:
-            raise RuntimeError
-
         with self._database.lock:
             if row:
                 if not isinstance(row, Row):
@@ -145,13 +126,11 @@ class Table:
 
             return row
 
-    def delete_row(self, row):
-        if self._is_view:
-            raise RuntimeError
-
+    def delete_rows(self, *row):
         with self._database.lock:
-            self._rows.remove(row)
-            self._remove_columns(row)
+            for row in rows:
+                self._rows.remove(row)
+                self._remove_columns(row)
 
     # pagination ##############################################################
     def get_pagination_pages(self, page_length=DEFAULT_PAGE_LENGTH):
@@ -171,10 +150,7 @@ class Table:
 
             return Table(
                 database=self._database,
-                name=self._name,
-                parent=self,
                 rows=self._rows[start_index:end_index],
-                is_view=True,
             )
 
     # filtering ###############################################################
@@ -197,8 +173,6 @@ class Table:
         with self._database.lock:
             table = Table(
                 database=self._database,
-                name=self._name,
-                parent=self
             )
 
             for row in self._rows:
@@ -226,8 +200,6 @@ class Table:
         with self._database.lock:
             return Table(
                 database=self._database,
-                name=self._name,
-                parent=self,
                 rows=self._rows[::-1],
             )
 
@@ -247,18 +219,5 @@ class Table:
 
             return Table(
                 database=self._database,
-                name=self._name,
-                parent=self,
                 rows=rows,
             )
-
-    # operations ##############################################################
-    def delete(self):
-        with self._database.lock:
-            if self._parent == None:
-                self._rows.clear()
-
-                return
-
-            for row in self:
-                self._parent.delete_row(row)
