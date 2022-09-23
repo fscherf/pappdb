@@ -1,0 +1,55 @@
+# owners ######################################################################
+owner:
+    - name: 'Alice'
+      age: 21
+
+    - name: 'Bob'
+      age: 30
+
+# manufacturers ###############################################################
+manufacturer:
+    - name: 'Toyota'
+      country: 'Japan'
+
+    - name: 'Mitsubishi'
+      country: 'Japan'
+
+    - name: 'Ford'
+      country: 'USA'
+
+# cars ########################################################################
+car:
+    # toyota #########################
+    - manufacturer: 'Toyota'
+      name: 'Supra'
+      color: 'green'
+      electric: False
+
+      owners:
+        - Alice
+        - Bob
+
+    - manufacturer: 'Toyota'
+      name: 'Corolla'
+      color: 'black'
+      electric: False
+
+      owners:
+        - Alice
+
+    - manufacturer: 'Toyota'
+      name: 'BZ4X'
+      color: 'green'
+      electric: True
+
+    # mitsubishi #####################
+    - manufacturer: 'Mitsubishi'
+      name: 'Eclipse'
+      color: 'green'
+      electric: False
+
+    - manufacturer: 'Mitsubishi'
+      name: 'i-MIEV'
+      color: 'white'
+      electric: True
+

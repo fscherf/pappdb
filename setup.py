@@ -3,17 +3,17 @@
 
 from setuptools import find_packages, setup
 
-from pappdb import VERSION_STRING
-
 setup(
     include_package_data=True,
     name='pappdb',
-    version=VERSION_STRING,
+    version='0.0',
     author='Florian Scherf',
     url='https://github.com/fscherf/pappdb',
     author_email='mail@florianscherf.de',
     license='MIT',
     packages=find_packages(),
-    install_requires=[],
+    install_requires=[
+        'prettytable~=3.4',
+    ],
     scripts=[],
 )
